@@ -10,23 +10,22 @@ trait Conditionable
     /**
      * Apply the callback if the given "value" is (or resolves to) truthy.
      *
-     * @param  mixed  $value
-     * @param  callable|null  $callback
-     * @param  callable|null  $default
+     * @param mixed $value
+     * @param callable|null $callback
+     * @param callable|null $default
      * @return $this|mixed
      */
-    public function when($value, callable $callback = null, callable $default = null)
+    public function when(mixed $value, callable $callback = null, callable $default = null): HigherOrderWhenProxy|static
     {
         $value = $value instanceof Closure ? $value($this) : $value;
 
-        if (! $callback) {
+        if (!$callback) {
             return new HigherOrderWhenProxy($this, $value);
         }
 
-        if ($value) {
-            return $callback($this, $value) ?: $this;
-        } elseif ($default) {
-            return $default($this, $value) ?: $this;
+        if ($value || $default) {
+            $callableMethod = $value ? $callback : $default;
+            return $callableMethod($this, $value) ?: $this;
         }
 
         return $this;
@@ -35,23 +34,22 @@ trait Conditionable
     /**
      * Apply the callback if the given "value" is (or resolves to) falsy.
      *
-     * @param  mixed  $value
-     * @param  callable|null  $callback
-     * @param  callable|null  $default
-     * @return $this|mixed
+     * @param mixed $value
+     * @param callable|null $callback
+     * @param callable|null $default
+     * @return $this|null
      */
-    public function unless($value, callable $callback = null, callable $default = null)
+    public function unless(mixed $value, callable $callback = null, callable $default = null): HigherOrderWhenProxy|static
     {
         $value = $value instanceof Closure ? $value($this) : $value;
 
-        if (! $callback) {
-            return new HigherOrderWhenProxy($this, ! $value);
+        if (!$callback) {
+            return new HigherOrderWhenProxy($this, !$value);
         }
 
-        if (! $value) {
-            return $callback($this, $value) ?: $this;
-        } elseif ($default) {
-            return $default($this, $value) ?: $this;
+        if (!$value || $default) {
+            $callableMethod = !$value ? $callback : $default;
+            return $callableMethod($this, $value) ?: $this;
         }
 
         return $this;
